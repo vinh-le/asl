@@ -50,10 +50,6 @@ def button(msg, x, y, w, h, i, a, action=None):
 def game_loop():
     gameExit = False
 
-    titleText = pygame.font.Font('freesansbold.ttf', 115)
-    TitleSurf, TitleRect = text_objects("Game Screen", titleText, black)
-    TitleRect.center = ((display_width/2), (display_height/4))
-
     while not gameExit:
 
         for event in pygame.event.get():
