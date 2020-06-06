@@ -5,10 +5,14 @@ import numpy as np
 import sys
 
 camera = cv2.VideoCapture(0)
+
+camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
 pygame.init()
 
 display_width = 1000
-display_height = 600
+display_height = 480
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -49,6 +53,11 @@ def button(msg, x, y, w, h, i, a, action=None):
 
 def game_loop():
     gameExit = False
+    
+    width = camera.get(3)
+    height = camera.get(4)
+
+    display_height = 480
 
     while not gameExit:
 
@@ -59,11 +68,11 @@ def game_loop():
 
         ret, frame = camera.read()
 		
-        gameDisplay.fill([0,0,0])
+        gameDisplay.fill(bg_col)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = np.rot90(frame)
         frame = pygame.surfarray.make_surface(frame)
-        gameDisplay.blit(frame, (0,0))
+        gameDisplay.blit(frame, (display_width-640,0))
 
         pygame.display.update()
         clock.tick(60)
@@ -85,7 +94,7 @@ def game_intro():
 
         tagText = pygame.font.Font('freesansbold.ttf', 18)
         TagSurf, TagRect = text_objects("Learn the ASL alphabet while trying to beat your high score!", tagText, black)
-        TagRect.center = ((display_width/2), (display_height/2.9))
+        TagRect.center = ((display_width/2), (display_height/2.75))
 
         scoreText = pygame.font.Font('freesansbold.ttf', 30)
         ScoreSurf, ScoreRect = text_objects("High Score: " + str(high_score), scoreText, black)
