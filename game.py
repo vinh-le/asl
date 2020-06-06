@@ -54,21 +54,46 @@ def button(msg, x, y, w, h, i, a, action=None):
 def game_loop():
     gameExit = False
     
-    width = camera.get(3)
-    height = camera.get(4)
+    current_score = 0
 
-    display_height = 480
+    timer_font = pygame.font.Font('freesansbold.ttf', 12)
+    timer_sec = 5
+    timer_text = timer_font.render("00:05", True, black)
+
+    timer = pygame.USEREVENT + 1                                                
+    pygame.time.set_timer(timer, 1000)
 
     while not gameExit:
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if event.type == timer:    # checks for timer event
+                if timer_sec > 0:
+                    timer_sec -= 1
+                    timer_text = timer_font.render("00:%02d" % timer_sec, True, black)
+                else:
+                    pygame.time.set_timer(timer, 1000)
+                    timer_sec = 5
+                    timer_text = timer_font.render("00:05", True, black)
+
+        gameDisplay.fill(bg_col)
+
+        gameDisplay.blit(timer_text, (180,450))
+
+        scoreText = pygame.font.Font('freesansbold.ttf', 25)
+        ScoreSurf, ScoreRect = text_objects("High Score: " + str(high_score), scoreText, black)
+        ScoreRect.center = (180, 18)
+        gameDisplay.blit(ScoreSurf, ScoreRect)
+
+
+        currentScoreText = pygame.font.Font('freesansbold.ttf', 25)
+        CurrentScoreSurf, CurrentScoreRect = text_objects("Current Score: " + str(current_score), currentScoreText, black)
+        CurrentScoreRect.center = (180, 52)
+        gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
 
         ret, frame = camera.read()
 		
-        gameDisplay.fill(bg_col)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = np.rot90(frame)
         frame = pygame.surfarray.make_surface(frame)
