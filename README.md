@@ -16,6 +16,7 @@ python3 train.py \
   --output_labels=logs/trained_labels.txt \
   --image_dir=./dataset
 ```
+More options outlined in [Inception](https://github.com/tensorflow/models/blob/master/research/inception/README.md)
 
 # Run ASL Buddy
 Run ASL Buddy with
