@@ -31,15 +31,15 @@ def predict(image_data):
 
 # Loads label file, strips off carriage return
 label_lines = [line.rstrip() for line
-                   in tf.gfile.GFile("logs/trained_labels.txt")]
+                   in tf.io.gfile.GFile("logs/trained_labels.txt")]
 
 # Unpersists graph from file
-with tf.gfile.FastGFile("logs/trained_graph.pb", 'rb') as f:
-    graph_def = tf.GraphDef()
+with tf.io.gfile.GFile("logs/trained_graph.pb", 'rb') as f:
+    graph_def = tf.compat.v1.GraphDef()
     graph_def.ParseFromString(f.read())
     _ = tf.import_graph_def(graph_def, name='')
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     # Feed the image_data as input to the graph and get first prediction
     softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
 

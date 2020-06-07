@@ -31,10 +31,10 @@ pygame.display.set_caption('ASL Buddy')
 clock = pygame.time.Clock()
 
 label_lines = [line.rstrip() for line
-                   in tf.gfile.GFile("logs/trained_labels.txt")]
+                   in tf.io.gfile.GFile("logs/trained_labels.txt")]
 
-with tf.gfile.FastGFile("logs/trained_graph.pb", 'rb') as f:
-    graph_def = tf.GraphDef()
+with tf.io.gfile.GFile("logs/trained_graph.pb", 'rb') as f:
+    graph_def = tf.compat.v1.GraphDef()
     graph_def.ParseFromString(f.read())
     _ = tf.import_graph_def(graph_def, name='')
 
@@ -138,7 +138,8 @@ def game_loop():
         # gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
 
         ret, frame = camera.read()
-        frame = cv2.flip(frame, 1)
+        if ret:
+            frame = cv2.flip(frame, 1)
         x1, y1, x2, y2 = 100, 100, 300, 300
 
         if ret:
@@ -199,7 +200,7 @@ def game_intro():
         pygame.display.update()
         clock.tick(15)
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
     game_intro()
     game_loop()
