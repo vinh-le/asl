@@ -24,6 +24,7 @@ button_blue = (23, 37, 86)
 button_blue_hover = (7, 18, 58)
 timer_red = (128, 21, 21)
 
+intro = True
 high_score = 0
 
 gameDisplay = pygame.display.set_mode((display_width, display_height))
@@ -72,6 +73,7 @@ def button(msg, x, y, w, h, i, a, action=None):
             pygame.draw.rect(gameDisplay, a, startButton)
             if click[0] == 1 and action != None:
                 if action == "start":
+                    intro = False
                     game_loop()
         else:
             pygame.draw.rect(gameDisplay, i, startButton)
@@ -84,6 +86,7 @@ def game_loop():
 
     gameExit = False
     
+    global current_score
     current_score = 0
 
     timer_font = pygame.font.Font('freesansbold.ttf', 12)
@@ -101,6 +104,8 @@ def game_loop():
 
     i = 0
 
+    curr = ""
+
     while not gameExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -108,17 +113,24 @@ def game_loop():
                 quit()
             if event.type == timer:    # checks for timer event
                 if timer_sec > 0:
-                    timer_sec -= 1
-                    timer_text = timer_font.render("00:%02d" % timer_sec, True, timer_red)
-                else:
-                    pygame.time.set_timer(timer, 1000)
-                    timer_sec = 5
-                    timer_text = timer_font.render("00:05", True, timer_red)
-                    rand_letter = random.choice(string.ascii_uppercase)
+                    if curr == rand_letter:
+                        current_score+=10
+                        pygame.time.set_timer(timer, 1000)
+                        timer_sec = 5
+                        timer_text = timer_font.render("00:05", True, timer_red)
+                        rand_letter = random.choice(string.ascii_uppercase)
 
-                    letterText = pygame.font.Font('freesansbold.ttf', 200)
-                    LetterSurf, LetterRect = text_objects(rand_letter, letterText, black)
-                    LetterRect.center = (180, 240)
+                        letterText = pygame.font.Font('freesansbold.ttf', 200)
+                        LetterSurf, LetterRect = text_objects(rand_letter, letterText, black)
+                        LetterRect.center = (180, 240)
+                    else:
+                        timer_sec -= 1
+                        timer_text = timer_font.render("00:%02d" % timer_sec, True, timer_red)
+                else:
+                    gameExit = True
+                    end_screen(rand_letter)
+
+                    
 
 
         gameDisplay.fill(bg_col)
@@ -133,9 +145,9 @@ def game_loop():
 
 
         currentScoreText = pygame.font.Font('freesansbold.ttf', 25)
-        # CurrentScoreSurf, CurrentScoreRect = text_objects("Current Score: " + str(current_score), currentScoreText, black)
-        # CurrentScoreRect.center = (180, 52)
-        # gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
+        CurrentScoreSurf, CurrentScoreRect = text_objects("Current Score: " + str(current_score), currentScoreText, black)
+        CurrentScoreRect.center = (180, 52)
+        gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
 
         ret, frame = camera.read()
         if ret:
@@ -150,9 +162,7 @@ def game_loop():
 
                 res_tmp, score = predict(image_data)
 
-                TempSurf, TempRect = text_objects(str(res_tmp), currentScoreText, black)
-                TempRect.center = (180, 52)
-                gameDisplay.blit(TempSurf, TempRect)
+                curr = res_tmp.upper()
         
         i+=1
         
@@ -199,6 +209,43 @@ def game_intro():
         
         pygame.display.update()
         clock.tick(15)
+
+def end_screen(rand_letter):
+    global high_score
+    high_score = max(current_score,high_score)
+    end = True
+    while end:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    game_intro()
+
+        gameDisplay.fill(bg_col)
+        button("Start Over!", display_width/2, display_height-35, 150, 50, button_blue, button_blue_hover, "start")
+        currentScoreText = pygame.font.Font('freesansbold.ttf', 35)
+
+        MessageSurf, MessageRect = text_objects("You missed '" + str(rand_letter) + "'", currentScoreText, black)
+        MessageRect.center = (display_width/2, 50)
+        gameDisplay.blit(MessageSurf, MessageRect)
+
+        image = pygame.image.load("alphabet/" + str(rand_letter) + ".png")
+        gameDisplay.blit(image, (display_width/2-90, 100)) 
+
+        CurrentScoreSurf, CurrentScoreRect = text_objects("Score: " + str(current_score), currentScoreText, black)
+        CurrentScoreRect.center = (display_width/2, display_height/2 + 110)
+        gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
+
+        HighScoreSurf, HighScoreRect = text_objects("High Score: " + str(high_score), currentScoreText, black)
+        HighScoreRect.center = (display_width/2, display_height/2 + 150)
+        gameDisplay.blit(HighScoreSurf, HighScoreRect)
+        
+        pygame.display.update()
+        clock.tick(15)
+
+        
 
 with tf.compat.v1.Session() as sess:
     softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
