@@ -5,6 +5,7 @@ import numpy as np
 import sys
 import string
 import random
+import tensorflow as tf
 
 camera = cv2.VideoCapture(0)
 
@@ -28,6 +29,32 @@ high_score = 0
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('ASL Buddy')
 clock = pygame.time.Clock()
+
+label_lines = [line.rstrip() for line
+                   in tf.gfile.GFile("logs/trained_labels.txt")]
+
+with tf.gfile.FastGFile("logs/trained_graph.pb", 'rb') as f:
+    graph_def = tf.GraphDef()
+    graph_def.ParseFromString(f.read())
+    _ = tf.import_graph_def(graph_def, name='')
+
+def predict(image_data):
+
+    predictions = sess.run(softmax_tensor, \
+             {'DecodeJpeg/contents:0': image_data})
+
+    # Sort to show labels of first prediction in order of confidence
+    top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
+
+    max_score = 0.0
+    res = ''
+    for node_id in top_k:
+        human_string = label_lines[node_id]
+        score = predictions[0][node_id]
+        if score > max_score:
+            max_score = score
+            res = human_string
+    return res, max_score
 
 def text_objects(text, font, color):
     textSurface = font.render(text, True, color)
@@ -54,6 +81,7 @@ def button(msg, x, y, w, h, i, a, action=None):
         gameDisplay.blit(ButtonSurf, ButtonRect)
 
 def game_loop():
+
     gameExit = False
     
     current_score = 0
@@ -70,6 +98,8 @@ def game_loop():
     letterText = pygame.font.Font('freesansbold.ttf', 200)
     LetterSurf, LetterRect = text_objects(rand_letter, letterText, black)
     LetterRect.center = (180, 240)
+
+    i = 0
 
     while not gameExit:
         for event in pygame.event.get():
@@ -103,16 +133,36 @@ def game_loop():
 
 
         currentScoreText = pygame.font.Font('freesansbold.ttf', 25)
-        CurrentScoreSurf, CurrentScoreRect = text_objects("Current Score: " + str(current_score), currentScoreText, black)
-        CurrentScoreRect.center = (180, 52)
-        gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
+        # CurrentScoreSurf, CurrentScoreRect = text_objects("Current Score: " + str(current_score), currentScoreText, black)
+        # CurrentScoreRect.center = (180, 52)
+        # gameDisplay.blit(CurrentScoreSurf, CurrentScoreRect)
 
         ret, frame = camera.read()
-		
+        frame = cv2.flip(frame, 1)
+        x1, y1, x2, y2 = 100, 100, 300, 300
+
+        if ret:
+            if i == 10:
+                i = 0
+                img_cropped = frame[y1:y2, x1:x2]
+                image_data = cv2.imencode('.jpg', img_cropped)[1].tostring()
+
+                res_tmp, score = predict(image_data)
+
+                TempSurf, TempRect = text_objects(str(res_tmp), currentScoreText, black)
+                TempRect.center = (180, 52)
+                gameDisplay.blit(TempSurf, TempRect)
+        
+        i+=1
+        
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (255,0,0), 2)
+        frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = np.rot90(frame)
         frame = pygame.surfarray.make_surface(frame)
         gameDisplay.blit(frame, (display_width-640,0))
+
+
 
         pygame.display.update()
         clock.tick(60)
@@ -149,7 +199,9 @@ def game_intro():
         pygame.display.update()
         clock.tick(15)
 
-game_intro()
-game_loop()
-pygame.quit()
-quit()
+with tf.Session() as sess:
+    softmax_tensor = sess.graph.get_tensor_by_name('final_result:0')
+    game_intro()
+    game_loop()
+    pygame.quit()
+    quit()
