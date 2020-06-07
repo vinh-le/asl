@@ -19,7 +19,6 @@ python3 train.py \
 More options outlined in [Inception](https://github.com/tensorflow/models/blob/master/research/inception/README.md)
 
 # Run ASL Buddy
-Run ASL Buddy with
 ```
 python3 game.py
 ```
