@@ -16,7 +16,7 @@ python3 train.py \
   --output_labels=logs/trained_labels.txt \
   --image_dir=./dataset
 ```
-This will build Inception and train a model inside of a directory called logs/
+This will build Inception and train a model inside of a directory called logs. The logs directory is essential for running the actual game application. Training the model may take up to an hour (training_steps parameter is adjustable).
 
 More options outlined in [Inception](https://github.com/tensorflow/models/blob/master/research/inception/README.md).
 
