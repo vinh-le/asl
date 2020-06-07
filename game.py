@@ -3,6 +3,8 @@ from pygame.locals import *
 import cv2
 import numpy as np
 import sys
+import string
+import random
 
 camera = cv2.VideoCapture(0)
 
@@ -17,9 +19,9 @@ display_height = 480
 black = (0, 0, 0)
 white = (255, 255, 255)
 bg_col = (238, 238, 238)
-
 button_blue = (23, 37, 86)
 button_blue_hover = (7, 18, 58)
+timer_red = (128, 21, 21)
 
 high_score = 0
 
@@ -58,10 +60,16 @@ def game_loop():
 
     timer_font = pygame.font.Font('freesansbold.ttf', 12)
     timer_sec = 5
-    timer_text = timer_font.render("00:05", True, black)
+    timer_text = timer_font.render("00:05", True, timer_red)
 
     timer = pygame.USEREVENT + 1                                                
     pygame.time.set_timer(timer, 1000)
+
+    rand_letter = random.choice(string.ascii_uppercase)
+
+    letterText = pygame.font.Font('freesansbold.ttf', 200)
+    LetterSurf, LetterRect = text_objects(rand_letter, letterText, black)
+    LetterRect.center = (180, 240)
 
     while not gameExit:
         for event in pygame.event.get():
@@ -71,15 +79,22 @@ def game_loop():
             if event.type == timer:    # checks for timer event
                 if timer_sec > 0:
                     timer_sec -= 1
-                    timer_text = timer_font.render("00:%02d" % timer_sec, True, black)
+                    timer_text = timer_font.render("00:%02d" % timer_sec, True, timer_red)
                 else:
                     pygame.time.set_timer(timer, 1000)
                     timer_sec = 5
-                    timer_text = timer_font.render("00:05", True, black)
+                    timer_text = timer_font.render("00:05", True, timer_red)
+                    rand_letter = random.choice(string.ascii_uppercase)
+
+                    letterText = pygame.font.Font('freesansbold.ttf', 150)
+                    LetterSurf, LetterRect = text_objects(rand_letter, letterText, black)
+                    LetterRect.center = (180, 240)
+
 
         gameDisplay.fill(bg_col)
 
         gameDisplay.blit(timer_text, (180,450))
+        gameDisplay.blit(LetterSurf, LetterRect)
 
         scoreText = pygame.font.Font('freesansbold.ttf', 25)
         ScoreSurf, ScoreRect = text_objects("High Score: " + str(high_score), scoreText, black)
