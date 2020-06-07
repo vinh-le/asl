@@ -86,7 +86,7 @@ def game_loop():
                     timer_text = timer_font.render("00:05", True, timer_red)
                     rand_letter = random.choice(string.ascii_uppercase)
 
-                    letterText = pygame.font.Font('freesansbold.ttf', 150)
+                    letterText = pygame.font.Font('freesansbold.ttf', 200)
                     LetterSurf, LetterRect = text_objects(rand_letter, letterText, black)
                     LetterRect.center = (180, 240)
 
