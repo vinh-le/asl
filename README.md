@@ -1,5 +1,5 @@
 # ASL Buddy
-A game developed for Hack the Northeast 2020 that challenges you to beat your high score while learning the ASL alphabet.
+A game developed for Hack the Northeast 2020 that challenges you to beat your high score while learning the ASL alphabet. Awarded Most Viable Startup at HTNE.
 
 # Requirements
 This project uses Python3, OpenCV, Tensorflow 2 Pygame, as well as other libraries outlined in the requirements.txt.
