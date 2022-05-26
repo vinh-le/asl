@@ -6,5 +6,5 @@ opencv-python==3.2.0.8
 pygame==1.9.6
 scipy==1.4.1
 tensorboard==2.0.2
-tensorflow==2.0.0
+tensorflow==2.7.2
 tensorflow-estimator==2.0.1
